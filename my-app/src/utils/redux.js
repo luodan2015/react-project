@@ -65,3 +65,15 @@ export function applyMiddleware(...middlewares) {
     };
   }
 }
+
+function bindActionCreator(creator, dispatch) {
+  return (...args) => dispatch(creator(...args))
+}
+
+export function bindActionCreators(creators, dispatch) {
+  const res = {}
+  for (let key in creators) {
+    res[key] = bindActionCreator(creators[key], dispatch)
+  }
+  return res;
+}

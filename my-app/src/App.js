@@ -4,7 +4,8 @@ import React from 'react';
 // import ContextPage from './pages/ContextPage';
 // import ContextTypePage from './pages/ContextTypePage';
 // import ConsumerPage from './pages/ConsumerPage';
-import ReduxPage from './pages/ReduxPage';
+// import ReduxPage from './pages/ReduxPage';
+import ReactReduxPage from './pages/ReactReduxPage';
 
 import './App.css';
 
@@ -20,7 +21,9 @@ function App() {
       {/* <ContextTypePage />
       <ConsumerPage /> */}
       {/* Redux学习 */}
-      <ReduxPage />
+      {/* <ReduxPage /> */}
+      {/* react-redux */}
+      <ReactReduxPage />
     </div>
   );
 }
