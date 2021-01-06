@@ -7,6 +7,7 @@ import reportWebVitals from './reportWebVitals';
 import { Provider } from './utils/reactRedux';
 import store from './store/index-redux';
 
+// 把store放在最顶层
 // 把Provider放在根组件外层，使子组件都能获得store
 ReactDOM.render(
   <React.StrictMode>
