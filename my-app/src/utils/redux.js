@@ -27,9 +27,9 @@ export function createStore(reducer, enhancer) {
   dispatch({ type: '@INIT/REDUX' });
 
   return {
-    getState,
-    dispatch,
-    subscribe,
+    getState, // 获取store中的状态
+    dispatch, // 派发
+    subscribe, // 订阅
   };
 };
 
