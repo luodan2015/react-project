@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
 import { Button } from 'antd';
 import { connect } from 'react-redux';
+// import { Redirect } from 'react-router-dom';
+import Redirect from '../utils/react-router-dom/Redirect';
 
 export default connect(({ user }) => ({ isLogin: user.isLogin }), {
   login: () => ({ type: 'LOGIN' }),
@@ -11,7 +12,7 @@ export default connect(({ user }) => ({ isLogin: user.isLogin }), {
       const { isLogin, location, login } = this.props;
       const { redirect = '/' } = location.state || {};
       if (isLogin) {
-        return <Redirect to={redirect} />;
+        return <Redirect to={{ pathname: redirect }} />;
       }
       return (
         <div>
