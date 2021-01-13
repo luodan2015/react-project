@@ -44,7 +44,8 @@ export default class ReactRouterPage extends Component {
             <PrivateRoute path="/user" component={UserPage} />
             <Route path="/login" component={LoginPage} />
             <Route path="/search/:id" component={SearchComponent} />
-            {/* <Route render={() => <div>404</div>} /> */}
+            {/* 如果Route没有path值，将一直被匹配 */}
+            <Route render={() => <div>404</div>} />
           </Switch>
         </BrowserRouter>
         {/* </Router> */}

@@ -4,7 +4,7 @@ import matchPath from './matchPath';
 
 export default class Route extends Component {
   render() {
-    const { path, children, component, render } = this.props;
+    const { path, computedMatch, children, component, render } = this.props;
 
     return (
       <RouterContext.Consumer>
@@ -12,7 +12,11 @@ export default class Route extends Component {
           // const match = context.location.pathname === path;
           // return match ? React.createElement(component, this.props) : null;
           const location = this.props.location || context.location;
-          const match = matchPath(location.pathname, this.props);
+          const match = computedMatch
+            ? computedMatch
+            : path
+            ? matchPath(location.pathname, this.props)
+            : context.match;
           // children, component, render 能接收到 history location match
           // 所以需要定义在props，传下去
           const props = {
