@@ -4,11 +4,16 @@ import React from './utils/react';
 import ReactDOM from './utils/react-dom';
 import './index.css';
 
+function FuncComp({ name }) {
+  return <div>hello, {name}</div>;
+}
+
 const jsx = (
   <div className="border">
     app
     <p>react</p>
     <p>源码学习</p>
+    <FuncComp name="function" />
   </div>
 );
 

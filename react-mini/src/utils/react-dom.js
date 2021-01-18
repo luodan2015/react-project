@@ -10,7 +10,9 @@ function render(vnode, container, callback) {
 function createNode(vnode) {
   const { type, props } = vnode;
   let node;
-  if (type === 'TEXT') {
+  if (typeof type === 'function') {
+    node = updateFunctionComponent(vnode);
+  } else if (type === 'TEXT') {
     node = document.createTextNode('');
   } else {
     node = document.createElement(type);
@@ -35,6 +37,14 @@ function updateNode(node, nextVal) {
     .forEach((key) => {
       node[key] = nextVal[key];
     });
+}
+
+// function组件，返回node
+function updateFunctionComponent(vnode) {
+  const { type, props } = vnode;
+  const vvnode = type(props);
+  const node = createNode(vvnode);
+  return node;
 }
 
 export default { render };
