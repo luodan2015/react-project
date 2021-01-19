@@ -2,10 +2,23 @@
 // import ReactDOM from 'react-dom';
 import React from './utils/react';
 import ReactDOM from './utils/react-dom';
+import Component from './utils/Component';
 import './index.css';
 
 function FuncComp({ name }) {
-  return <div>hello, {name}</div>;
+  return (
+    <p>
+      hello, {name}
+      <button onClick={() => console.log('click')}>click</button>
+    </p>
+  );
+}
+
+class ClassComp extends Component {
+  render() {
+    const { name } = this.props;
+    return <p>hello, {name}</p>;
+  }
 }
 
 const jsx = (
@@ -14,6 +27,7 @@ const jsx = (
     <p>react</p>
     <p>源码学习</p>
     <FuncComp name="function" />
+    <ClassComp name="class" />
   </div>
 );
 
@@ -24,8 +38,8 @@ ReactDOM.render(jsx, document.getElementById('root'));
 // ! 节点类型：
 // 文本节点
 // html标签节点
-// class component
 // function component
+// class component
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

@@ -11,7 +11,10 @@ function createNode(vnode) {
   const { type, props } = vnode;
   let node;
   if (typeof type === 'function') {
-    node = updateFunctionComponent(vnode);
+    // node = type.isReactComponent
+    node = type.prototype.isReactComponent
+      ? updateClassComponent(vnode)
+      : updateFunctionComponent(vnode);
   } else if (type === 'TEXT') {
     node = document.createTextNode('');
   } else {
@@ -35,7 +38,13 @@ function updateNode(node, nextVal) {
   Object.keys(nextVal)
     .filter((key) => key !== 'children')
     .forEach((key) => {
-      node[key] = nextVal[key];
+      // 事件判定，简单处理，以on开头的就认为是一个事件，源码处理复杂一些
+      if (key.slice(0, 2) === 'on') {
+        const eventName = key.slice(2).toLocaleLowerCase();
+        node.addEventListener(eventName, nextVal[key]);
+      } else {
+        node[key] = nextVal[key];
+      }
     });
 }
 
@@ -43,6 +52,14 @@ function updateNode(node, nextVal) {
 function updateFunctionComponent(vnode) {
   const { type, props } = vnode;
   const vvnode = type(props);
+  const node = createNode(vvnode);
+  return node;
+}
+
+function updateClassComponent(vnode) {
+  const { type, props } = vnode;
+  const cmp = new type(props); // 实例化
+  const vvnode = cmp.render();
   const node = createNode(vvnode);
   return node;
 }
