@@ -4,8 +4,6 @@ import React from './utils/react';
 import ReactDOM from './utils/react-dom';
 import Component from './utils/Component';
 import './index.css';
-import { createElement } from 'react';
-import { node } from 'prop-types';
 
 function FuncComp({ name }) {
   return (
