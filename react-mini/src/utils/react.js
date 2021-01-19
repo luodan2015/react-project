@@ -9,6 +9,7 @@ function createElement(type, props, ...children) {
     type,
     props: {
       ...props,
+      // ! 这里的处理与源码稍有不同，源码里，如果只有一个元素，childen是对象，多余一个元素的时候，是数组
       children: children.map((child) => {
         return typeof child === 'object' ? child : createTextNode(child);
       }),

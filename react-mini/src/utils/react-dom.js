@@ -17,7 +17,7 @@ function createNode(vnode) {
       : updateFunctionComponent(vnode);
   } else if (type === 'TEXT') {
     node = document.createTextNode('');
-  } else if(type) {
+  } else if (type) {
     node = document.createElement(type);
   } else {
     node = document.createDocumentFragment();
@@ -31,7 +31,13 @@ function createNode(vnode) {
 function reconcilerChildren(children, container) {
   // 遍历 创建元素
   children.forEach((child) => {
-    render(child, container);
+    if (Array.isArray(child)) {
+      child.forEach((c) => {
+        render(c, container);
+      });
+    } else {
+      render(child, container);
+    }
   });
 }
 

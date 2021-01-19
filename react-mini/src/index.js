@@ -4,6 +4,8 @@ import React from './utils/react';
 import ReactDOM from './utils/react-dom';
 import Component from './utils/Component';
 import './index.css';
+import { createElement } from 'react';
+import { node } from 'prop-types';
 
 function FuncComp({ name }) {
   return (
@@ -23,15 +25,24 @@ class ClassComp extends Component {
 
 const jsx = (
   <div className="border">
+    <h5>文本节点</h5>
     app
+    <h5>html标签节点</h5>
     <p>react</p>
     <p>源码学习</p>
+    <h5>function component</h5>
     <FuncComp name="function" />
+    <h5>class component</h5>
     <ClassComp name="class" />
+    <h5>fragment</h5>
     <React.Fragment>
       <p>文本一</p>
       <p>文本二</p>
     </React.Fragment>
+    <h5>数组</h5>
+    {[1, 2, 3].map((item) => (
+      <div key={item}>{item}</div>
+    ))}
   </div>
 );
 
@@ -45,7 +56,8 @@ ReactDOM.render(jsx, document.getElementById('root'));
 // function component
 // class component
 // fragment
+// 数组
+// 其他如portal等节点
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+// * jsx => createElement(生成element，就是我们需要的虚拟dom) => render(vnode -> node，再把node渲染到container)
+// * vnode -> node的流程注意下节点的区分，不同节点处理方式不同
