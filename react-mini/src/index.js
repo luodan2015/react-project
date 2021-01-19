@@ -58,7 +58,7 @@ ReactDOM.render(jsx, document.getElementById('root'));
 
 // ! 节点类型：
 // 文本节点
-// html标签节点
+// html标签节点 HostComponent
 // function component
 // class component
 // fragment
