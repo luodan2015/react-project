@@ -15,9 +15,17 @@ function FuncComp({ name }) {
 }
 
 class ClassComp extends Component {
+  static defaultProps = {
+    color: 'pink',
+  };
   render() {
-    const { name } = this.props;
-    return <p>hello, {name}</p>;
+    const { name, color } = this.props;
+    return (
+      <>
+        <p>hello, {name}</p>
+        <p className={color}>defaultProps</p>
+      </>
+    );
   }
 }
 
@@ -31,7 +39,7 @@ const jsx = (
     <h5>function component</h5>
     <FuncComp name="function" />
     <h5>class component</h5>
-    <ClassComp name="class" />
+    <ClassComp name="class" color="red" />
     <h5>fragment</h5>
     <React.Fragment>
       <p>文本一</p>

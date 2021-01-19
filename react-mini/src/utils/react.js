@@ -3,11 +3,18 @@
 
 // 接收type, props, children，返回一个vnode
 function createElement(type, props, ...children) {
-  delete props.__source;
-  delete props.__self;
+  if (props) {
+    delete props.__source;
+    delete props.__self;
+  }
+  let defaultProps = {};
+  if (type && type.defaultProps) {
+    defaultProps = type.defaultProps;
+  }
   return {
     type,
     props: {
+      ...defaultProps,
       ...props,
       // ! 这里的处理与源码稍有不同，源码里，如果只有一个元素，childen是对象，多余一个元素的时候，是数组
       children: children.map((child) => {
