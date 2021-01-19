@@ -28,6 +28,10 @@ const jsx = (
     <p>源码学习</p>
     <FuncComp name="function" />
     <ClassComp name="class" />
+    <React.Fragment>
+      <p>文本一</p>
+      <p>文本二</p>
+    </React.Fragment>
   </div>
 );
 
@@ -40,6 +44,7 @@ ReactDOM.render(jsx, document.getElementById('root'));
 // html标签节点
 // function component
 // class component
+// fragment
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

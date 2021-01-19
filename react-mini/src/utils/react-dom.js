@@ -17,8 +17,10 @@ function createNode(vnode) {
       : updateFunctionComponent(vnode);
   } else if (type === 'TEXT') {
     node = document.createTextNode('');
-  } else {
+  } else if(type) {
     node = document.createElement(type);
+  } else {
+    node = document.createDocumentFragment();
   }
   updateNode(node, props);
   // 遍历子节点
