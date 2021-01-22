@@ -2,32 +2,32 @@
 // import ReactDOM from 'react-dom';
 import React from './utils/react';
 import ReactDOM from './utils/react-dom';
-// import Component from './utils/Component';
+import Component from './utils/Component';
 import './index.css';
 
-// function FuncComp({ name }) {
-//   return (
-//     <p>
-//       hello, {name}
-//       <button onClick={() => console.log('click')}>click</button>
-//     </p>
-//   );
-// }
+function FuncComp({ name }) {
+  return (
+    <p>
+      hello, {name}
+      <button onClick={() => console.log('click')}>click</button>
+    </p>
+  );
+}
 
-// class ClassComp extends Component {
-//   static defaultProps = {
-//     color: 'pink',
-//   };
-//   render() {
-//     const { name, color } = this.props;
-//     return (
-//       <>
-//         <p>hello, {name}</p>
-//         <p className={color}>defaultProps</p>
-//       </>
-//     );
-//   }
-// }
+class ClassComp extends Component {
+  static defaultProps = {
+    color: 'pink',
+  };
+  render() {
+    const { name, color } = this.props;
+    return (
+      <>
+        <p>hello, {name}</p>
+        <p className={color}>defaultProps</p>
+      </>
+    );
+  }
+}
 
 const jsx = (
   <div className="border">
@@ -36,11 +36,11 @@ const jsx = (
     <h5>html标签节点</h5>
     <p>react</p>
     <p>源码学习</p>
-    {/* <h5>function component</h5>
+    <h5>function component</h5>
     <FuncComp name="function" />
     <h5>class component</h5>
     <ClassComp name="class" color="red" />
-    <h5>fragment</h5>
+    {/* <h5>fragment</h5>
     <React.Fragment>
       <p>文本一</p>
       <p>文本二</p>

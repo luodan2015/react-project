@@ -29,6 +29,7 @@ function createNode(vnode) {
   return node;
 }
 
+// 构建fiber结构，遍历workInProgressFiber的子节点
 function reconcilerChildren(workInProgressFiber, children) {
   // 构建fiber结构
   // 数组
@@ -77,22 +78,22 @@ function updateNode(node, nextVal) {
     });
 }
 
-// function组件，返回node
-function updateFunctionComponent(vnode) {
-  const { type, props } = vnode;
-  const vvnode = type(props);
-  const node = createNode(vvnode);
-  return node;
+// function组件，构建fiber
+function updateFunctionComponent(fiber) {
+  const { type, props } = fiber;
+  const children = [type(props)];
+  reconcilerChildren(fiber, children);
 }
 
-function updateClassComponent(vnode) {
-  const { type, props } = vnode;
+// class组件，构建fiber
+function updateClassComponent(fiber) {
+  const { type, props } = fiber;
   const cmp = new type(props); // 实例化
-  const vvnode = cmp.render();
-  const node = createNode(vvnode);
-  return node;
+  const children = [cmp.render()];
+  reconcilerChildren(fiber, children);
 }
 
+// 原生标签，构建fiber
 function updateHostComponent(fiber) {
   if (!fiber.node) {
     fiber.node = createNode(fiber);
@@ -101,9 +102,20 @@ function updateHostComponent(fiber) {
   reconcilerChildren(fiber, children);
 }
 
+// 执行当前任务，指定下一个任务
 function performUnitOfWork(fiber) {
   // 执行当前子任务
-  updateHostComponent(fiber);
+  const { type } = fiber;
+  if (typeof type === 'function') {
+    if (type.prototype.isReactComponent) {
+      updateClassComponent(fiber);
+    } else {
+      updateFunctionComponent(fiber);
+    }
+  } else {
+    updateHostComponent(fiber);
+  }
+
   // 返回下一个子任务
   // 找到下个任务的原则：先找子元素
   if (fiber.child) {
@@ -138,12 +150,14 @@ function workLoop(deadline) {
   requestIdleCallback(workLoop);
 }
 
+// 提交
 function commitRoot() {
   commitWorker(wipRoot.child);
   currentRoot = wipRoot;
   wipRoot = null;
 }
 
+// 提交具体的fiber执行
 function commitWorker(fiber) {
   if (!fiber) {
     return;
@@ -156,7 +170,8 @@ function commitWorker(fiber) {
   }
   const parentNode = parentNodeFiber.node;
   // 更新 删除 新增
-  if (fiber.effectTag === PLACEMENT && fiber.node !== null) {
+  if (fiber.effectTag === PLACEMENT && ![null, undefined].includes(fiber.node)) {
+    console.log('fiber.node', fiber.node);
     parentNode.appendChild(fiber.node);
   }
   commitWorker(fiber.child);
