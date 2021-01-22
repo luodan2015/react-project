@@ -102,18 +102,24 @@ function updateHostComponent(fiber) {
   reconcilerChildren(fiber, children);
 }
 
+// Fragment，构建fiber
+function updateFragmentComponent(fiber) {
+  const { children } = fiber.props;
+  reconcilerChildren(fiber, children);
+}
+
 // 执行当前任务，指定下一个任务
 function performUnitOfWork(fiber) {
   // 执行当前子任务
   const { type } = fiber;
   if (typeof type === 'function') {
-    if (type.prototype.isReactComponent) {
-      updateClassComponent(fiber);
-    } else {
-      updateFunctionComponent(fiber);
-    }
-  } else {
+    type.prototype.isReactComponent
+      ? updateClassComponent(fiber)
+      : updateFunctionComponent(fiber);
+  } else if (type) {
     updateHostComponent(fiber);
+  } else {
+    updateFragmentComponent(fiber);
   }
 
   // 返回下一个子任务
@@ -170,7 +176,10 @@ function commitWorker(fiber) {
   }
   const parentNode = parentNodeFiber.node;
   // 更新 删除 新增
-  if (fiber.effectTag === PLACEMENT && ![null, undefined].includes(fiber.node)) {
+  if (
+    fiber.effectTag === PLACEMENT &&
+    ![null, undefined].includes(fiber.node)
+  ) {
     console.log('fiber.node', fiber.node);
     parentNode.appendChild(fiber.node);
   }

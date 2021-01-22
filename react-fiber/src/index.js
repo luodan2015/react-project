@@ -40,12 +40,12 @@ const jsx = (
     <FuncComp name="function" />
     <h5>class component</h5>
     <ClassComp name="class" color="red" />
-    {/* <h5>fragment</h5>
-    <React.Fragment>
+    <h5>fragment</h5>
+    <>
       <p>文本一</p>
       <p>文本二</p>
-    </React.Fragment>
-    <h5>数组</h5>
+    </>
+    {/* <h5>数组</h5>
     {[1, 2, 3].map((item) => (
       <div key={item}>{item}</div>
     ))} */}
