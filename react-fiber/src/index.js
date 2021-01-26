@@ -14,9 +14,15 @@ function FuncComp({ name }) {
   return (
     <p>
       hello, {name}
-      <div {...obj}>ooooo</div>
+      <div {...obj}>节点属性和事件的更新</div>
+      <div className="green">
+        {count % 2 ? (
+          <button onClick={() => console.log('click')}>click</button>
+        ) : (
+          <div>omg</div>
+        )}
+      </div>
       <button onClick={() => setCount(count + 1)}>count - {count}</button>
-      <button onClick={() => console.log('click')}>click</button>
     </p>
   );
 }

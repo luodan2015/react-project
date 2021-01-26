@@ -1,4 +1,4 @@
-import { PLACEMENT, UPDATE } from './constant';
+import { DELETIONS, PLACEMENT, UPDATE } from './constant';
 
 // 下一个子任务
 let nextUnitOfWork = null;
@@ -9,6 +9,8 @@ let currentRoot = null;
 // 当前正在工作的fiber
 let wipFiber = null;
 let hookIndex = null;
+// 存放删除fiber的数组，最后提交的时候进行统一提交，不要忘记每次进行初始化
+let deletions = null;
 
 function render(vnode, container, callback) {
   wipRoot = {
@@ -17,6 +19,7 @@ function render(vnode, container, callback) {
     base: currentRoot,
   };
   nextUnitOfWork = wipRoot;
+  deletions = [];
 }
 
 // 根据vnode，创建一个node
@@ -43,8 +46,8 @@ function reconcilerChildren(workInProgressFiber, children) {
     let newFiber = null;
     // todo 比较type key
     const sameType = child && oldFiber && child.type === oldFiber.type;
+    // 更新 update 复用
     if (sameType) {
-      // 复用 update
       newFiber = {
         type: oldFiber.type, // 类型 区分不同的fiber，比如说function class host等
         props: child.props, // 属相参数等
@@ -55,8 +58,8 @@ function reconcilerChildren(workInProgressFiber, children) {
         effectTag: UPDATE,
       };
     }
+    // 新增
     if (!sameType && child) {
-      // 新增
       newFiber = {
         type: child.type, // 类型 区分不同的fiber，比如说function class host等
         props: child.props, // 属相参数等
@@ -67,8 +70,11 @@ function reconcilerChildren(workInProgressFiber, children) {
         effectTag: PLACEMENT,
       };
     }
+    // 删除
     if (!sameType && oldFiber) {
-      // todo 删除
+      // 有个删除数组，每次push打了删除tag的fiber进去，最后统一提交
+      oldFiber.effectTag = DELETIONS;
+      deletions.push(oldFiber);
     }
 
     if (oldFiber) {
@@ -199,6 +205,7 @@ function workLoop(deadline) {
 
 // 提交
 function commitRoot() {
+  deletions.forEach(commitWorker);
   commitWorker(wipRoot.child);
   currentRoot = wipRoot;
   wipRoot = null;
@@ -226,10 +233,22 @@ function commitWorker(fiber) {
         break;
       case UPDATE:
         updateNode(fiber.node, fiber.base.props, fiber.props);
+        break;
+      case DELETIONS:
+        commitDeletions(fiber, parentNode);
+        break;
     }
   }
   commitWorker(fiber.child);
   commitWorker(fiber.sibling);
+}
+
+function commitDeletions(fiber, parentNode) {
+  if (fiber.node) {
+    parentNode.removeChild(fiber.node);
+  } else {
+    commitDeletions(fiber.child, parentNode);
+  }
 }
 
 requestIdleCallback(workLoop);
@@ -255,6 +274,7 @@ function useState(init) {
       base: currentRoot,
     };
     nextUnitOfWork = wipRoot;
+    deletions = [];
   };
   wipFiber.hooks.push(hook);
   hookIndex++;
