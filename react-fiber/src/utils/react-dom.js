@@ -1,4 +1,4 @@
-import { PLACEMENT } from './constant';
+import { PLACEMENT, UPDATE } from './constant';
 
 // 下一个子任务
 let nextUnitOfWork = null;
@@ -6,6 +6,9 @@ let nextUnitOfWork = null;
 let wipRoot = null;
 // 现在的根节点
 let currentRoot = null;
+// 当前正在工作的fiber
+let wipFiber = null;
+let hookIndex = null;
 
 function render(vnode, container, callback) {
   wipRoot = {
@@ -25,7 +28,7 @@ function createNode(vnode) {
   } else if (type) {
     node = document.createElement(type);
   }
-  updateNode(node, props);
+  updateNode(node, {}, props);
   return node;
 }
 
@@ -39,15 +42,35 @@ function reconcilerChildren(workInProgressFiber, children) {
   children.forEach((child, index) => {
     let newFiber = null;
     // todo 比较type key
-    newFiber = {
-      type: child.type, // 类型 区分不同的fiber，比如说function class host等
-      props: child.props, // 属相参数等
-      node: null, // 真实的dom节点
-      base: null, // 存储fiber，便于去比较
-      // parent
-      parent: workInProgressFiber,
-      effectTag: PLACEMENT,
-    };
+    const sameType = child && oldFiber && child.type === oldFiber.type;
+    if (sameType) {
+      // 复用 update
+      newFiber = {
+        type: oldFiber.type, // 类型 区分不同的fiber，比如说function class host等
+        props: child.props, // 属相参数等
+        node: oldFiber.node, // 真实的dom节点
+        base: oldFiber, // 存储fiber，便于去比较
+        // parent
+        parent: workInProgressFiber,
+        effectTag: UPDATE,
+      };
+    }
+    if (!sameType && child) {
+      // 新增
+      newFiber = {
+        type: child.type, // 类型 区分不同的fiber，比如说function class host等
+        props: child.props, // 属相参数等
+        node: null, // 真实的dom节点
+        base: null, // 存储fiber，便于去比较
+        // parent
+        parent: workInProgressFiber,
+        effectTag: PLACEMENT,
+      };
+    }
+    if (!sameType && oldFiber) {
+      // todo 删除
+    }
+
     if (oldFiber) {
       oldFiber = oldFiber.sibling;
     }
@@ -64,7 +87,22 @@ function reconcilerChildren(workInProgressFiber, children) {
 }
 
 // 更新节点上属性，如className,nodeValue等
-function updateNode(node, nextVal) {
+function updateNode(node, prevVal, nextVal) {
+  // 上一次的属性和事件处理
+  Object.keys(prevVal)
+    .filter((key) => key !== 'children')
+    .forEach((key) => {
+      // 事件判定，简单处理，以on开头的就认为是一个事件，源码处理复杂一些
+      if (key.slice(0, 2) === 'on') {
+        const eventName = key.slice(2).toLocaleLowerCase();
+        node.removeEventListener(eventName, prevVal[key]);
+      } else {
+        // 上一次的属性出现过，下一次没有了，就需要置空
+        if (!(key in nextVal)) {
+          node[key] = '';
+        }
+      }
+    });
   Object.keys(nextVal)
     .filter((key) => key !== 'children')
     .forEach((key) => {
@@ -80,6 +118,9 @@ function updateNode(node, nextVal) {
 
 // function组件，构建fiber
 function updateFunctionComponent(fiber) {
+  wipFiber = fiber;
+  fiber.hooks = [];
+  hookIndex = 0;
   const { type, props } = fiber;
   const children = [type(props)];
   reconcilerChildren(fiber, children);
@@ -175,13 +216,17 @@ function commitWorker(fiber) {
     parentNodeFiber = parentNodeFiber.parent;
   }
   const parentNode = parentNodeFiber.node;
-  // 更新 删除 新增
-  if (
-    fiber.effectTag === PLACEMENT &&
-    ![null, undefined].includes(fiber.node)
-  ) {
-    console.log('fiber.node', fiber.node);
-    parentNode.appendChild(fiber.node);
+
+  if (![null, undefined].includes(fiber.node)) {
+    console.log('fiber - ', fiber);
+    // 更新 删除 新增
+    switch (fiber.effectTag) {
+      case PLACEMENT:
+        parentNode.appendChild(fiber.node);
+        break;
+      case UPDATE:
+        updateNode(fiber.node, fiber.base.props, fiber.props);
+    }
   }
   commitWorker(fiber.child);
   commitWorker(fiber.sibling);
@@ -189,4 +234,31 @@ function commitWorker(fiber) {
 
 requestIdleCallback(workLoop);
 
-export default { render };
+// init是初始值
+function useState(init) {
+  // 新旧
+  const oldHook = wipFiber.base && wipFiber.base.hooks[hookIndex];
+  const hook = {
+    state: oldHook ? oldHook.state : init,
+    queue: [],
+  };
+  const actions = oldHook ? oldHook.queue : [];
+  actions.forEach((action) => {
+    hook.state = action;
+  });
+
+  const setState = (action) => {
+    hook.queue.push(action);
+    wipRoot = {
+      node: currentRoot.node,
+      props: currentRoot.props,
+      base: currentRoot,
+    };
+    nextUnitOfWork = wipRoot;
+  };
+  wipFiber.hooks.push(hook);
+  hookIndex++;
+  return [hook.state, setState];
+}
+
+export default { render, useState };

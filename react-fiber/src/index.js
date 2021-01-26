@@ -5,10 +5,17 @@ import ReactDOM from './utils/react-dom';
 import Component from './utils/Component';
 import './index.css';
 
+const { useState } = ReactDOM;
+
 function FuncComp({ name }) {
+  const [count, setCount] = useState(0);
+  const obj =
+    count % 2 ? { className: 'red' } : { onClick: () => console.log('oooo') };
   return (
     <p>
       hello, {name}
+      <div {...obj}>ooooo</div>
+      <button onClick={() => setCount(count + 1)}>count - {count}</button>
       <button onClick={() => console.log('click')}>click</button>
     </p>
   );
