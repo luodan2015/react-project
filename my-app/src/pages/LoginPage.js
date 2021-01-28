@@ -5,9 +5,15 @@ import { connect } from '../utils/reactRedux';
 // import { Redirect } from 'react-router-dom';
 import Redirect from '../utils/react-router-dom/Redirect';
 
-export default connect(({ user }) => ({ isLogin: user.isLogin }), {
-  login: () => ({ type: 'LOGIN' }),
-})(
+export default connect(
+  ({ user }) => {
+    console.log('LoginPage - connect - mapStateToProps');
+    return { isLogin: user.isLogin };
+  },
+  {
+    login: () => ({ type: 'LOGIN' }),
+  }
+)(
   class LoginPage extends Component {
     render() {
       const { isLogin, location, login } = this.props;
