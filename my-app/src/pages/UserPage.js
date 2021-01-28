@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Button } from 'antd';
-// import { connect } from 'react-redux';
-import { connect } from '../utils/reactRedux';
+import { connect } from 'react-redux';
+// import { connect } from '../utils/reactRedux';
 
 export default connect(({ user }) => ({ isLogin: user.isLogin }), {
   logout: () => ({ type: 'LOGOUT' }),
