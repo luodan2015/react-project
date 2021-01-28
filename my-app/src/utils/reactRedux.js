@@ -9,26 +9,36 @@ export const connect = (
   return class extends Component {
     // 此时组件的所有生命周期都能获得this.context
     static contextType = ValueContext;
-    constructor(props) {
+    constructor(props, context) {
       super(props);
-      this.state = {
-        props: {},
-      };
+      // this.state = {
+      //   props: {},
+      // };
+      this.stateProps = {};
+      this.dispatchProps = {};
+      this.update(context);
     }
 
     componentDidMount() {
       const { subscribe } = this.context;
-      this.update();
+      // this.update();
       // 订阅
-      subscribe(() => {
+      this.unsubscribe = subscribe(() => {
         this.update();
+        this.forceUpdate();
       });
     }
 
-    update = () => {
-      const { getState, dispatch } = this.context;
+    componentWillUnmount() {
+      if (this.unsubscribe) {
+        this.unsubscribe();
+      }
+    }
+
+    update = (context) => {
+      const { getState, dispatch } = context || this.context;
       // getState 获取当前store的state
-      const stateProps = mapStateToProps(getState(), this.props);
+      this.stateProps = mapStateToProps(getState(), this.props);
       let dispatchProps = { dispatch };
 
       // mapDispatchToProps Object / Function
@@ -38,17 +48,17 @@ export const connect = (
       if (typeof mapDispatchToProps === 'object') {
         dispatchProps = bindActionCreators(mapDispatchToProps, dispatch);
       }
-      this.setState({
-        props: {
-          ...stateProps,
-          ...dispatchProps,
-        },
-      });
+      this.dispatchProps = dispatchProps;
+      // this.setState({
+      //   props: {
+      //     ...stateProps,
+      //     ...dispatchProps,
+      //   },
+      // });
     };
 
     render() {
-      const { props } = this.state;
-      return <WrapperComponent {...props} {...this.props} />;
+      return <WrapperComponent {...this.props} {...this.stateProps} {...this.dispatchProps} />;
     }
   };
 };
@@ -65,13 +75,13 @@ export class Provider extends Component {
 }
 
 function bindActionCreator(creator, dispatch) {
-  return (...args) => dispatch(creator(...args))
+  return (...args) => dispatch(creator(...args));
 }
 
 function bindActionCreators(creators, dispatch) {
-  const res = {}
+  const res = {};
   for (let key in creators) {
-    res[key] = bindActionCreator(creators[key], dispatch)
+    res[key] = bindActionCreator(creators[key], dispatch);
   }
   return res;
 }

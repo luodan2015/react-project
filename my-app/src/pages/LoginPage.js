@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Button } from 'antd';
-import { connect } from 'react-redux';
+// import { connect } from 'react-redux';
+import { connect } from '../utils/reactRedux';
 // import { Redirect } from 'react-router-dom';
 import Redirect from '../utils/react-router-dom/Redirect';
 

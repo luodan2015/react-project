@@ -17,7 +17,7 @@ export default class Switch extends Component {
           // * this.props.children 可以是数组形式或者对象，如果使用for循环只能兼容数组形式，如果是对象需要处理成数组；
           // * React.Children.forEach 兼容两种数据格式的处理
           React.Children.forEach(children, (child) => {
-            debugger;
+            // debugger;
             if (match === null && React.isValidElement(child)) {
               element = child;
               const { path } = child.props;

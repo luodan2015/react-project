@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
+// import { connect } from 'react-redux';
+import { connect } from '../utils/reactRedux';
 // import { Route, Redirect } from 'react-router-dom';
 import Route from '../utils/react-router-dom/Route';
 import Redirect from '../utils/react-router-dom/Redirect';
