@@ -1,23 +1,38 @@
 // import { createStore, applyMiddleware } from 'redux';
 // import thunk from 'redux-thunk';
 // import logger from 'redux-logger';
+// import promise from 'redux-promise';
+import isPromise from 'is-promise';
+
 import { createStore, applyMiddleware } from '../utils/redux';
 
-function thunk({ dispatch, getState }) {
-  return dispatch => action => {
-    console.log('thunk');
-    if (typeof action === 'function') {
-      return action(dispatch, getState);
-    } 
-    return dispatch(action);
-  }
+// wrapper function
+function logger({ dispatch, getState }) {
+  return (next) => (action) => {
+    console.log('---- logger next:', next);
+    console.log(`---- logger ${action.type} 执行了`);
+    console.log('prevState: ', getState());
+    const returnValue = next(action);
+    console.log('nextState: ', getState());
+    return returnValue;
+  };
 }
 
-function logger({ dispatch, getState }) {
-  return dispatch => action => {
-    console.log(`${action.type} 执行了`);
-    return dispatch(action);
-  }
+function thunk({ dispatch, getState }) {
+  return (next) => (action) => {
+    console.log('---- thunk next:', next);
+    if (typeof action === 'function') {
+      return action(dispatch, getState);
+    }
+    return next(action);
+  };
+}
+
+// 简版 TODO: 完整版(29-打卡点12)
+function promise({ dispatch, getState }) {
+  return (next) => (action) => {
+    return isPromise(action) ? action.then(dispatch) : next(action);
+  };
 }
 
 // 定义修改规则
@@ -32,6 +47,6 @@ function countReducer(state = 0, action) {
   }
 }
 
-const store = createStore(countReducer, applyMiddleware(thunk, logger));
+const store = createStore(countReducer, applyMiddleware(promise, thunk, logger));
 
 export default store;

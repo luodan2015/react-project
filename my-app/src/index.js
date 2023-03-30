@@ -3,10 +3,10 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { Provider } from 'react-redux';
-// import { Provider } from './utils/reactRedux';
-// import store from './store/index-redux';
-import store from './store/user';
+// import { Provider } from 'react-redux';
+import { Provider } from './utils/reactRedux';
+import store from './store/index-redux';
+// import store from './store/user';
 
 // 把store放在最顶层
 // 把Provider放在根组件外层，使子组件都能获得store

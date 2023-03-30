@@ -1,4 +1,6 @@
-import { createStore } from 'redux';
+// We recommend using configureStore from the @reduxjs/toolkit package, which replaces createStore
+import { legacy_createStore as createStore } from 'redux';
+// import { createStore } from '../utils/redux';
 
 // 定义修改规则
 function countReducer(state = 0, action) {

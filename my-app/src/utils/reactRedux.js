@@ -1,21 +1,146 @@
 import React, {
-  Component,
+  // Component,
   useContext,
   useMemo,
   useLayoutEffect,
   useReducer,
+  useCallback,
 } from 'react';
 
-const ValueContext = React.createContext();
+function useForceUpdate() {
+  const [, setState] = useReducer((state) => state + 1, 0);
+  const forceUpdate = useCallback(() => {
+    console.log('.... update ....');
+    setState();
+  }, []);
 
-// connect - 类的形式实现
+  return forceUpdate;
+}
+
+// 1.创建context对象
+const Context = React.createContext();
+
+// 2.Provider传递value store 
+/**
+ * Provider函数组件实现
+ */
+export function Provider({ store, children }) {
+  return <Context.Provider value={store}>{children}</Context.Provider>;
+}
+
+// 3.子孙组件消费store
+/**
+ * connect - hooks的方式实现
+ */
+export const connect =
+  (mapStateToProps = (state) => state, mapDispatchToProps) =>
+  (WrapperComponent) =>
+  (props) => {
+    const store = useContext(Context);
+    const { getState, dispatch, subscribe } = store;
+    const state = getState();
+    const stateProps = useMemo(() => mapStateToProps(state, props), [state, props]);
+    // const stateProps = mapStateToProps(state, props);
+    const dispatchProps = useMemo(() => {
+      if (typeof mapDispatchToProps === 'function') {
+        return mapDispatchToProps(dispatch, props);
+      } else if (typeof mapDispatchToProps === 'object') {
+        return bindActionCreators(mapDispatchToProps, dispatch);
+      }
+      return { dispatch }; 
+    }, [dispatch, props]);
+    // const dispatchProps = bindActionCreators(mapDispatchToProps, dispatch);
+
+    // const [, forceUpdate] = useReducer((state) => state + 1, 0);
+    const forceUpdate = useForceUpdate();
+
+    /**
+     * client端使用的是useLayoutEffect来订阅，useEffect有延迟，如果在延迟时间内有更新，此时还没有订阅上就会丢失更新
+     * ssr服务端使用的是useEffect来订阅，因为ssr服务端没有useLayoutEffect
+     */
+    useLayoutEffect(() => {
+      console.log('---- 订阅 ----');
+      const unsubscribe = subscribe(() => {
+        forceUpdate();
+      });
+      return () => {
+        if (unsubscribe) {
+          console.log('---- 取消订阅 ----');
+          unsubscribe();
+        }
+      };
+    }, [subscribe, forceUpdate]);
+
+    console.log('stateProps --- ', stateProps);
+    console.log('dispatchProps --- ', stateProps);
+
+    return <WrapperComponent {...props} {...stateProps} {...dispatchProps} />;
+  };
+
+export function useSelector(selector) {
+  const store = useContext(Context);
+  const { getState, subscribe } = store;
+
+  const forceUpdate = useForceUpdate();
+  useLayoutEffect(() => {
+    console.log('---- 订阅 ----');
+    const unsubscribe = subscribe(() => {
+      forceUpdate();
+    });
+    return () => {
+      if (unsubscribe) {
+        console.log('---- 取消订阅 ----');
+        unsubscribe();
+      }
+    };
+  }, [subscribe, forceUpdate]);
+
+  return selector(getState());
+}
+
+export function useDispatch() {
+  console.log('---- useDispatch ----');
+  const store = useContext(Context);
+  return store.dispatch;
+}
+
+function bindActionCreator(creator, dispatch) {
+  return (...args) => dispatch(creator(...args));
+}
+
+function bindActionCreators(creators, dispatch) {
+  console.log('执行 - bindActionCreators');
+  const res = {};
+  for (let key in creators) {
+    res[key] = bindActionCreator(creators[key], dispatch);
+  }
+  return res;
+}
+
+/**
+ * Provider类组件实现
+ */
+// export class Provider extends Component {
+//   render() {
+//     const { store } = this.props;
+//     return (
+//       <Context.Provider value={store}>
+//         {this.props.children}
+//       </Context.Provider>
+//     );
+//   }
+// }
+
+/**
+ * connect - 类的形式实现
+ */
 // export const connect = (
 //   mapStateToProps = (state) => state,
 //   mapDispatchToProps
 // ) => (WrapperComponent) => {
 //   return class extends Component {
 //     // 此时组件的所有生命周期都能获得this.context
-//     static contextType = ValueContext;
+//     static contextType = Context;
 //     constructor(props, context) {
 //       super(props);
 //       // this.state = {
@@ -69,58 +194,3 @@ const ValueContext = React.createContext();
 //     }
 //   };
 // };
-
-// connect - hooks的方式实现
-export const connect = (
-  mapStateToProps = (state) => state,
-  mapDispatchToProps
-) => (WrapperComponent) => (props) => {
-  const store = useContext(ValueContext);
-  const { getState, dispatch, subscribe } = store;
-  const state = getState();
-  const stateProps = useMemo(() => mapStateToProps(state, props), [state]);
-  // const stateProps = mapStateToProps(state, props);
-  const dispatchProps = useMemo(
-    // 这里只取了一种类型处理
-    () => bindActionCreators(mapDispatchToProps, dispatch),
-    [store]
-  );
-  // const dispatchProps = bindActionCreators(mapDispatchToProps, dispatch);
-
-  const [, forceUpdate] = useReducer(null);
-  useLayoutEffect(() => {
-    const unsubscribe = subscribe(() => {
-      forceUpdate();
-    });
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
-  }, [subscribe]);
-  return <WrapperComponent {...props} {...stateProps} {...dispatchProps} />;
-};
-
-export class Provider extends Component {
-  render() {
-    const { store } = this.props;
-    return (
-      <ValueContext.Provider value={store}>
-        {this.props.children}
-      </ValueContext.Provider>
-    );
-  }
-}
-
-function bindActionCreator(creator, dispatch) {
-  return (...args) => dispatch(creator(...args));
-}
-
-function bindActionCreators(creators, dispatch) {
-  console.log('执行 - bindActionCreators');
-  const res = {};
-  for (let key in creators) {
-    res[key] = bindActionCreator(creators[key], dispatch);
-  }
-  return res;
-}
